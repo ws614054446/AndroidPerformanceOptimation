@@ -1,0 +1,135 @@
+#### 1、什么是内存泄漏
+当一个对象已经不需要使用了，本该被回收时，但是另外一个使用的对象持有它的应引用，从而导致对象不能被回收。这种导致了本该被回收的对象不能被回收而停留在堆内存中，就叫内存泄漏。
+(GC只有在对象不再有任何的引用的时候才会进行回收)
+
+内存溢出（OOM）：当应用占用的heap资源超过了Dalvik虚拟机分配的内存就会内存溢出。
+当内存泄漏过多的时候，再加上应用本身占用的内存，最终就会导致内存溢出。
+#### 2、内存分配的几种策略
+- 静态的：内存在程序编译的时候就已经分配好了。这块的内存在程序整个运行期间都一直存在。
+
+- 栈式的：在执行函数时，函数的一些内部变量的存储都可以放在栈上创建，函数执行结束的时候，
+这些存储单元就会自动被释放掉。
+
+- 堆式的：也叫动态分配内存。如创建数组和对象。
+
+- 常量池：在编译期被确定，并被保存在已编译的.class文件中的一些数据。
+
+栈的优势是，存取速度比堆要快，仅次于寄存器，栈数据可以共享。但缺点是，存在栈中的数据大小与生存期必须是确定的。
+
+#### 3、对象引用的四种级别
+- 强引用（StrongReference）：GC绝不会回收它。当内存空间不足，JVM宁愿抛出OutOfMemoryError错误，使程序异常终止，也不会靠随意回收具有强引用的对象来解决内存不足问题。
+- 软引用（SoftReference）：如果内存空间足够，GC就不会回收它，如果内存空间不足了，就会回收这些对象的内存。只要GC没有回收它，该对象就可以被程序使用。软引用可用来实现内存敏感的高速缓存。
+- 弱引用（WeakReference）：弱引用与软引用的区别在于：只具有弱引用的对象拥有更短暂的生命周期。在GC扫描它所管辖的内存区域的过程中，一旦发现了只具有弱引用的对象，不管当前内存空间足够与否，都会回收它的内存。
+- 虚引用（PhatomReference）：虚引用并不会决定对象的生命周期。如果一个对象仅持有虚引用，那么它就和没有任何引用一样，在任何时候都可能被垃圾回收。虚引用必须和引用队列（ReferenceQueue）联合使用。
+
+开发时，为了防治内存溢出，处理一些比较占用内存大并且生命周期长的对象的时候，可以尽量使用软引用和弱引用。
+
+#### 使用MAT（Memory Analyzer Tool）
+
+[MAT下载地址](http://www.eclipse.org/mat/downloads.php)
+
+查看内存泄漏的类，查看其被哪些类引用。
+
+#### 如何找到项目中存在的内存泄漏
+1、确定是否存在内存泄漏
+1）、Android Monitors分析内存
+记录动作发生之前GC完的内存大小，然后记录动作发生之后GC完后的内存大小，两个比较大小，如果内存变大的话，则可能存在内存泄漏。
+
+使用MAT内存分析工具
+MAT分析heap的总内存占用大小来初步判断是否存在内存泄漏
+Heap视图中有一个Type叫data object,即数据对象，也就是我们程序中大量存在的类型的对象。
+ 在data object中有一项“Total Size”，其值就是当前进程中所有Java数据对象的内存总来过。
+ 进行操作前和操作后的内存的大小比较。正常情况下Total Size值都会稳定在一个有限的范围内，
+ 也就是没有内存泄漏。如果值不断增大，则可以初步判断这个操作导致了内存泄漏。
+
+2、先找到怀疑对象（哪些对象属于泄漏的）
+MAT对比操作前后的hprof来定位内存泄漏了什么数据对象。（这样做可以排除一些对象，不用后面去查看所有被引用的对象是否有嫌疑）。
+快速定位到操作前后所持有的对象哪些是增加了的（GC后还是比之前多出来的对象就可能是内存泄漏的源头）。
+技巧：Histogram中还可以对对象进行Grpup By Package更方便查看自己包里的对象信息。
+
+3、MAT分析hprof来定位内存泄漏的原因（哪个对象持有了上面怀疑出来的发生泄漏的对象）
+
+1）Dump出内存泄露“当时”的内存镜像hprof，分析怀疑泄露的类；
+
+2）把上面2得出的这些嫌疑犯一个一个排查个遍。
+
+步骤：
+(1)进入Histogram，过滤出某一个嫌疑对象类
+
+(2)然后分析持有此类对象引用的外部对象（在该类上面点击右键List Objects--->with incoming references）
+
+(3)再过滤掉一些弱引用、软引用、虚引用，因为它们迟早可以被GC干掉不属于内存泄露
+		   (在类上面点击右键Merge Shortest Paths to GC Roots--->exclude all phantom/soft etc.references)
+(4)逐个分析每个对象的GC路径是否正常
+
+###### 退出app后，GC后，产看系统进程里的所有的View和Activity对象是否为0，
+Android Monitors--System Information--Memory Usage查看
+
+#### 常见的内存泄漏
+1、静态变量引起的内存泄漏
+
+2、非静态内部类引起内存泄漏（包括匿名内部类）
+```
+/**
+     * 错误写法（匿名内部类持外部引用造成内存泄漏问题）
+     * 隐式持有Activity实例
+     * 解决方案：将非静态内部类改为静态内部类（静态内部类不会隐式持有外部类）
+     */
+    int a = 0;
+    public void loadData(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                //进行操作
+                int b = a;
+            }
+        }).start();
+    }
+
+//匿名内部类的实例，也会引用外部对象MainActivity.this
+//解决方案：改成静态的
+    private Handler mHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            //
+        }
+    };
+
+    //解决方案2：改成静态类,集成Handler
+    private static class MyHandler extends Handler{
+    //如果需要持有一个外部类的强引用
+
+
+
+        @Override
+         public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+                    //
+         }
+    }
+
+```
+
+
+3、资源未关闭引起的内存泄漏情况：
+
+比如：BroadCastReceiver,Cursor,Bitmap,IO流,自定义属性（attr.recycle）
+
+4、无限循环
+
+在onDestory中停止
+
+5、WebView内存泄漏
+解决办法是通过把使用了WebView的Activity(或者Service)放在单独的进程里。
+然后在检测到应用占用内存过大有可能被系统干掉或者它所在的Activity(或者Service)结束后，
+调用android.os.Process.killProcess(android.os.Process.myPid());，主动Kill掉进程。
+由于系统的内存分配是以进程为准的，进程关闭后，系统会自动回收所有内存。
+```
+<activity
+  android:name=".MainActivity"
+  android:process="com.whoislcj.webview"/>
+```
+
+
+

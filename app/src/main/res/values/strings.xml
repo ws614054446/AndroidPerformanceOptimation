@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">AndroidPerformanceOptimation</string>
+    <string name="memory_leakage">内存泄漏</string>
 </resources>
