@@ -21,9 +21,9 @@ public class MemoryLeakageActivity extends AppCompatActivity {
 
         CommonUtils commonUtils = CommonUtils.getInstance(this);//单例导致内存泄漏例子
 
-        loadData();
-
-        mHandler.sendEmptyMessage(0);
+//        loadData();
+//
+//        mHandler.sendEmptyMessage(0);
 
 
     }
@@ -72,7 +72,6 @@ public class MemoryLeakageActivity extends AppCompatActivity {
             }
             switch (msg.what){
                 case 0:
-
                     break;
             }
         }

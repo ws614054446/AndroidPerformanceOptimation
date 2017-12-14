@@ -132,4 +132,31 @@ Android Monitors--System Information--Memory Usage查看
 ```
 
 
+#### 性能优化工具
 
+常用的有：MAT,Memory Monitor,HeapTool,Allaction Tracking,LeakCanary,Lint工具
+
+1、Allaction Tracking
+
+追踪内存分配信息。可以直观地看到某个操作的内存是如何一步一步地分配的
+
+
+2、LeakCanary
+
+[github地址](https://github.com/square/leakcanary)
+
+可以直接在手机端查看内存泄漏的工具。
+
+3、Lint工具
+
+可以检测常见的内存泄漏
+
+可以检测资源文件是否用到
+
+可以检测代码规范
+
+可以检测android版本安全问题
+
+没用的导包
+
+可能的bug

@@ -3,6 +3,7 @@
     package="com.wangshuai.androidperformanceoptimation">
 
     <application
+        android:name=".MyApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -16,7 +17,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".memoryleakage.MemoryLeakageActivity"></activity>
+        <activity android:name=".memoryleakage.MemoryLeakageActivity" />
+        <activity android:name=".network.NetWorkActivity" />
+        <activity android:name=".bitmapoptimation.BitmapActivity"></activity>
     </application>
 
 </manifest>
