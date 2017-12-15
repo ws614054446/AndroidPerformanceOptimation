@@ -1,8 +1,6 @@
 package com.wangshuai.androidperformanceoptimation.threadoptimation;
 
-import android.os.AsyncTask;
-import android.os.Handler;
-
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -18,7 +16,6 @@ public class ThreadTest1 {
     static class ProduceObject{
         private String value = "";
     }
-
 
     public static void main(String[] args){
 //        Handler

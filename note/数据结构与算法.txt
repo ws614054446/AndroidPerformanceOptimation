@@ -1,0 +1,206 @@
+一、数据结构概论
+1、数据 数据元素，数据项
+数据结构就是指数据元素之间存在的关系
+
+2、数据的逻辑结构
+1）、线性结构：数据元素只有一个前驱数据元素和一个后继数据元素
+2）、树结构：每个数据元素只有一个前驱数据元素，可有零个或若干个后继元素
+3）、每个数据元素可有零个或若干个前驱数据元素，零个或若干个后继数据元素。
+
+3、数据的存储结构
+1）、顺序存储结构
+
+2）、链式存储结构
+
+4、数据操作
+初始化，判空，求长度，包含，遍历，取值，置值，插入，删除
+
+5、数据类型：指一个类型和定义在这个类型上的操作集合
+抽象数据类型：指一个逻辑概念上的类型和这个类型上的操作集合
+
+二、算法概论
+1、算法定义：有穷性，确定性，输入，输出，可行性
+算法设计目标：正确性，可读性，健壮性，高时间效率，高空间效率
+
+2、时间效率
+指算法的执行时间随问题规模的增长而增长的趋势，通常采用时间复杂度来衡量算法的时间效率T(n)=O(f(n)) 
+
+3、空间效率
+空间复杂度指算法在执行时为解决问题所需要的额外内存空间，不包括输入数据所占用的存储空间S(n)=O(f(n))  
+
+4、算法时间复杂度分析
+1）、一个简单语句的时间复杂度为O(1)。int count=0; 
+2）、一个循环的时间复杂度为O(n)。
+int n=8, count=0;
+for (int i=1; i<=n; i++)
+    count++;
+3）、时间复杂度为O(log2 n)的循环语句。 
+int n=8, count=0;
+for (int i=1; i<=n; i*=2)
+    count++;
+4）、时间复杂度为O(n2)的二重循环。
+int n=8, count=0;
+for (int i=1; i<=n; i++) 
+    for (int j=1; j<=n; j++)
+        count++;
+
+5）、时间复杂度为O(nlog2n)的二重循环。
+int n=8, count=0;
+for (int i=1; i<=n; i*=2)
+    for (int j=1; j<=n; j++)
+        count++;
+6）、时间复杂度为O(n)的二重循环。
+int n=8, count=0;
+for (int i=1; i<=n; i*=2)
+    for (int j=1; j<=i; j++)
+        count++;
+时间复杂度为O(n)。
+
+三、线性表
+1、顺序表的静态特性良好，动态特性很差。
+1）、顺序表元素的物理内存顺序直接反映线性表元素的逻辑顺序，顺序表是一种随机存取结构。get(),set()时间复杂度是O(1)
+2)、插入和删除操作效率很低。
+如果在各位置插入元素的概率相同，时间复杂度为O(n)
+
+2、两个顺序表相等是指，它们各对应元素相等并且长度相同。
+
+3、线性表的链式表示和实现
+3.1、单链表
+
+结构：  数据域（data）-地址域（next）-下一个数据域-下一个地址域
+
+public T data;         //数据域，保存数据元素
+public Node<T> next;  //地址域，引用后继结点
+
+Node<String> p,q;
+p=new Node<String>("A", null ); 
+q=new Node<String>("B", null ); 
+p.next=q;
+
+3.2、单链表的遍历操作
+Node<T> p = head;
+while (p!=null) 
+{System.out.print(p.data.toString()+" "); //执行访问p结点的相关操作
+    p = p.next;
+}
+
+3.3、单链表的插入操作
+3.3.1、头插入
+if (head == null) 	//空表插入，改变head
+    head = new Node<T>(x, null);
+ else 	                 //头插入，在原第一个结点之前插入要插入的结点，改变head
+{   Node<T> q = new Node<T>(x, null);
+     q.next = head;
+     head = q;
+} 即head = new Node<T>(x, head);
+
+3.3.2、中间插入/尾插入
+Node<T> q = new Node<T>(x, null);
+q.next = p.next;//q的后继结点应是p的原后继结点
+p.next = q;               //q作为p的后继结点
+即p.next = new Node<T>(x, p.next);
+
+3.4、单链表的删除操作
+1、头删除
+head= head.next;
+
+2、中间/尾删除
+if(p.next != null)
+p.next = p.next.next
+
+4、带头结点的单链表
+头插入，不改变head
+头删除，不改变head
+
+5、单链表操作的效率分析
+1、isEmpty()方法的时间复杂度是O(1)
+2、length()方法要遍历单链表，时间复杂度O(n)
+3、get(i)和set(i)方法的时间复杂度是O(n)，不是随机存取结构
+4、insert（i,x）和remove(i)时间复杂度为O(n)
+
+6、提高单链表操作效率的措施
+public boolean append(T x)
+{
+    return insert(this.length(), x); //需遍历单链表两次，效率较低
+}
+return insert(Integer.MAX_VALUE, x); //遍历一次
+
+
+作用于顺序表的时间复杂度是O(n)，但作用于单链表的时间复杂度则是O(n*n)
+public String toString()
+{
+    String str="(";
+    if (this.length()!=0)
+    {   for(int i=0; i<this.length()-1; i++)
+            str += this.get(i).toString()+", ";
+        str += this.get(this.length()-1).toString();
+    }
+    return str+")";
+}
+
+7、单链表比较相等
+两条单链表相等是指，他们各对应元素相等并且长度相同
+
+3.3、双链表
+pred-data-next
+p = p.next.pred = p.pred.next
+
+3.3.1、双链表的插入和删除操作
+（1）、插入
+在P结点之前插入值为X结点
+q = new DLinkNode<T>(x, p.pred, p);
+p.pred.next = q;
+p.pred = q;
+
+
+在p结点之后插入值为x结点
+q = new DLinkNode<T>(x, p, p.next);  //当p.next==null时，尾插入
+if (p.next!=null) 
+    p.next.pred = q;     //中间插入时执行
+p.next = q;
+
+（2）双链表的删除操作 
+p.pred.next = p.next; //有p.pred!=null
+if (p.next!=null)
+    p.next.pred = p.pred;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

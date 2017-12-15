@@ -1,0 +1,46 @@
+#### 图片压缩
+1、svg图片：一些图片的描述，牺牲CPU的计算能力，节省空间
+
+使用原则：简单的图标
+
+2、webp图片
+
+Google提倡使用，保存图片比较小。webp的无损压缩比PNG文件小45%左右
+
+缺点：
+
+相比加载PNG要慢很多，但是配置比较高。
+
+http://isparta.github.io/
+
+
+#### 资源动态加载
+
+比如：表情，换肤；动态下载的资源；一些模块的插件化。
+
+#### Lint工具建议优化的点
+
+检测没有用的布局，未使用到的布局等
+
+
+#### Proguard混淆
+
+能删除注释和不用的代码；可以将Java文件名或者方法名改成短名
+
+
+#### 7zZip极限压缩
+
+在常规的安装包优化之外继续压缩（资源文件再压缩）
+
+实现将res/drawable/ic_lanchuer.png改成a.png
+
+drawable文件名字，string文件的名字。layout的名字
+
+可以将res/drawable/ic_lanchuer.png改成r/d/a.png
+
+解决方法：
+
+读取resources.arsc二进制文件，然后修改某一段的字节
+
+有一段叫做res/drawable/ic_lanchuer.png在自己的数组当中的第800位-810位
+将这一段第800位-810位替换成r/d/a.png的字节码
