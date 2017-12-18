@@ -1,0 +1,139 @@
+一、四大组件生命周期
+1、activity的屏幕旋转生命周期
+1）、不设置Activity的android:configChanges时，切屏会重新调用各个生命周期，切横屏时会执行一次，切竖屏时会执行两次；
+2）、设置Activity的android:configChanges=”orientation”时，切屏会重新调用各个生命周期，切横、竖屏时都只会执行一次；
+3）、设置Activity的android:configChanges=”orientation|keyboardHidden|screenSize”时，切屏不会重新调用各个生命周期，只会执行onConfigurationChanged方法。
+
+2、Service的生命周期
+1）、Context.startService()启动
+onCreate()---onStartCommand()---onDestroy()
+多次调用startService（）方法会多次触发onStart（）方法
+
+2）、Context.bindService()方法建立
+onCreate()---onBind()---onUnbind()(onRebind())---onDestory
+多次调用bindService（）时，如果该服务已启动则不会再触发此方法
+如果有新的客户端连接至该服务，只有当旧的调用onUnbind()后，新的才会调用该方法
+void onRebind(Intent intent)
+
+service重要的生命周期方法：
+当用户调用startService （）或bindService（）时，Service第一次被实例化的时候系统会调用,整个生命周期只调用1次这个方法，通常用于初始化设置。
+注意：多次调用startService（）或bindService（）方法不会多次触发onCreate（）方法
+当用户调用stopService()或unbindService（）来停止服务时被系统调用,（整个生命周期只调用1次）用来释void onDestroy()
+
+3、BroadcastReceive
+生命周期只有十秒左右，如果在 onReceive() 内做超过十秒内的事情，就会报ANR(Application No Response) 程序无响应的错误信息
+它的生命周期为从回调onReceive()方法开始到该方法返回结果后结束
+
+4、ContentProvider
+ContentProvider是应用安装时候就存在，卸载后就消失，没有运行状态，仅仅提供一个uri出去供其他应用操作。
+
+二、activity四中启动方式与应用场景：
+1、standard 
+每一次跳转都会在task中生成一个新的Activity(不管有没有已存在的实例)。
+
+2、singleTop
+跳转时系统会先在栈结构中寻找是否有一个Activity实例正位于栈顶，如果有则不再生成新的，而是直接使用。
+
+这种启动模式通常适用于接受到消息后显示的界面，例如QQ接受到消息后弹出Activity，如果一次来10条消息，
+总不能一次弹10个Activity。
+
+3、singleTask
+跳转时先查询栈中有没有这个Activity实例，如果有，区分是否在栈顶，不在栈顶则把在这个Activity实例上面的activity
+全部出栈销毁，将这个activity移动至栈顶。如果没有，则重新生成。
+singleTask适合作为程序入口点。
+
+4、singleInstance
+重新生成一个任务栈。
+适合需要与程序分离开的页面。例如闹铃提醒，将闹铃提醒与闹铃设置分离
+
+三、fragment生命周期
+
+onAttach()--onCreate()--onCreateView()--onActivityCreated()--onStart()--onResume()--onPuase()
+--onStop()--onDestoryView()--onDestory()--onDetach()
+
+onCreateView()：初始化Fragment的布局。加载布局和findViewById的操作通常在此函数内完成，但是不建议执行耗时的操作，比如读取数据库数据列表。
+onActivityCreated()：执行该方法时，与Fragment绑定的Activity的onCreate方法已经执行完成并返回，
+在该方法内可以进行与Activity交互的UI操作，所以在该方法之前Activity的onCreate方法并未执行完成，
+如果提前进行交互操作，会引发空指针异常。
+onDestroyView()：销毁与Fragment有关的视图，但未与Activity解除绑定，依然可以通过onCreateView方法重新创建视图。通常在ViewPager+Fragment的方式下会调用此方法。
+
+三、Dalvik虚拟机和JVM有什么区别
+1、Dalvik 基于寄存器，而 JVM 基于栈。基于寄存器的虚拟机对于更大的程序来说，在它们编译的时候，花费的时间更短。
+2、Dalvik执行.dex格式的字节码，而JVM执行.class格式的字节码
+
+
+四、HTTP和HTTPS的区别
+HTTP 的 URL 以 http:// 开头，而 HTTPS 的 URL 以 https:// 开头
+HTTP 是不安全的，而 HTTPS 是安全的
+HTTP 标准端口是 80 ，而 HTTPS 的标准端口是 443
+在 OSI 网络模型中，HTTP 工作于应用层，而 HTTPS 工作在传输层
+HTTP 无需加密，而 HTTPS 对传输的数据进行加密
+HTTP 无需证书，而 HTTPS 需要认证证书
+
+作者：闭关写代码
+链接：https://www.nowcoder.com/discuss/3244
+来源：牛客网
+
+14.4 介绍垃圾回收机制
+
+标记回收法：遍历对象图并且记录可到达的对象，以便删除不可到达的对象，一般使用单线程工作并且可能产生内存碎片
+标记-压缩回收法：前期与第一种方法相同，只是多了一步，将所有的存活对象压缩到内存的一端，这样内存碎片就可以合成一大块可再利用的内存区域，提高了内存利用率
+复制回收法：把现有内存空间分成两部分，gc运行时，它把可到达对象复制到另一半空间，再清空正在使用的空间的全部对象。这种方法适用于短生存期的对象，持续复制长生存期的对象则导致效率降低。
+分代回收发：把内存空间分为两个或者多个域，如年轻代和老年代，年轻代的特点是对象会很快被回收，因此在年轻代使用效率比较高的算法。当一个对象经过几次回收后依然存活，对象就会被放入称为老年的内存空间，老年代则采取标记-压缩算法
+
+
+作者：闭关写代码
+链接：https://www.nowcoder.com/discuss/3244
+来源：牛客网
+
+10.解析XML的几种方式的原理与特点：DOM、SAX、PULL
+DOM：消耗内存：先把xml文档都读到内存中，然后再用DOM API来访问树形结构，并获取数据。这个写起来很简单，但是很消耗内存。要是数据过大，手机不够牛逼，可能手机直接死机
+SAX：解析效率高，占用内存少，基于事件驱动的：更加简单地说就是对文档进行顺序扫描，当扫描到文档(document)开始与结束、元素(element)开始与结束、文档(document)结束等地方时通知事件处理函数，由事件处理函数做相应动作，然后继续同样的扫描，直至文档结束。
+SAX：与 SAX 类似，也是基于事件驱动，我们可以调用它的next（）方法，来获取下一个解析事件（就是开始文档，结束文档，开始标签，结束标签），当处于某个元素时可以调用XmlPullParser的getAttributte()方法来获取属性的值，也可调用它的nextText()获取本节点的值。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
