@@ -1,5 +1,60 @@
 volatile//线程操作变量可见
 
+#### AsyncTask源码分析
+
+public AsyncTask() {
+        mWorker = new WorkerRunnable<Params, Result>() {
+            public Result call() throws Exception {
+                mTaskInvoked.set(true);
+                Result result = null;
+                try {
+                    Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+                    //noinspection unchecked
+                    result = doInBackground(mParams);
+                    Binder.flushPendingCommands();
+                } catch (Throwable tr) {
+                    mCancelled.set(true);
+                    throw tr;
+                } finally {
+                    postResult(result);
+                }
+                return result;
+            }
+        };
+
+       mFuture = new FutureTask<Result>(mWorker) {
+            @Override
+            protected void done() {
+                try {
+                    postResultIfNotInvoked(get());
+                } catch (InterruptedException e) {
+                    android.util.Log.w(LOG_TAG, e);
+                } catch (ExecutionException e) {
+                    throw new RuntimeException("An error occurred while executing doInBackground()",
+                            e.getCause());
+                } catch (CancellationException e) {
+                    postResultIfNotInvoked(null);
+                }
+            }
+        };
+    }
+
+
+WorkerRunnable实现Callable<Result>,传给FutureTask<Result>;FutureTask由线程池执行这个异步任务。
+
+WorkerRunnable中call方法执行doInBackground()
+
+FutureTask中get()方法获取子线程中的返回值，等待异步任务执行完毕。
+
+当子线程执行完毕之后，执行done()方法，通过Handler发送信息将返回值发送到主线程。
+
+所有异步任务都是通过excute执行FutureTask；
+
+SerialExecutor implements Executor
+
+exec.execute(mFuture);
+
+
 FutureTask异步操作提供了便利性：
 
 1、获取异步任务的返回值
@@ -7,3 +62,55 @@ FutureTask异步操作提供了便利性：
 2、监听异步任务的执行完毕
 
 3、取消异步任务
+
+static {
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+                CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE_SECONDS, TimeUnit.SECONDS,
+                sPoolWorkQueue, sThreadFactory);
+        threadPoolExecutor.allowCoreThreadTimeOut(true);
+        THREAD_POOL_EXECUTOR = threadPoolExecutor;
+    }
+
+CORE_POOL_SIZE:核心线程数
+
+MAXIMUM_POOL_SIZE：最大线程数
+
+KEEP_ALIVE_SECONDS：闲置回收
+
+TimeUnit.SECONDS：时间单位
+
+sPoolWorkQueue：异步任务队列
+
+sThreadFactory：线程工厂
+
+添加到线程池是串行，添加到线程池后执行是并行；
+
+1、线程池容量不够抛出异常；
+2、内存泄漏；
+3、
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

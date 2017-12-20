@@ -1,5 +1,7 @@
 package com.wangshuai.androidperformanceoptimation.threadoptimation;
 
+import android.os.AsyncTask;
+
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
